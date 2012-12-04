@@ -1,0 +1,253 @@
+<?php
+namespace HMNavigation\Navigation\Service;
+
+use Zend\ServiceManager\ServiceManager;
+
+use Zend\Navigation\Navigation;
+
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+use Zend\Navigation\Service\AbstractNavigationFactory;
+
+class HMNavigationFactory extends AbstractNavigationFactory
+{
+	protected $serviceLocator;
+	protected $name = "default";
+	//protected $navs;
+	/*
+	 * Specify what menu to load
+	 */
+	public function getName(){
+		 return $this->name;
+	}
+	
+	public function setName($name)
+	{
+		$this->name = $name;
+	}
+	
+	public function createService(ServiceLocatorInterface $serviceLocator)
+	{
+		//exit();
+		$this->serviceLocator = $serviceLocator;
+		$default = $this->getNavs($serviceLocator);
+		//print_r(array_keys($navs));
+		//$this->setNavigationEntries($navs);
+		
+		return $default;
+	}
+	
+	private function getNavs($sl)
+	{
+		$sm = $this->serviceLocator->get('service_manager');
+		//$sm = new ServiceManager();
+		$sm->setAllowOverride(true);
+		//$sm->setF
+		
+		$config = $this->serviceLocator->get('Configuration');
+		$navigation = $config['navigation'];
+		$default = null;
+		foreach($navigation as $name=>$pages)
+		{
+			
+			$sm->setFactory($name,function($sm,$name)
+			{
+				//echo $name;
+				//$sl = $sm->getServiceLocator();
+				$menu = new HMMenuFactory();
+				$menu->setName($name);
+				return $menu->createService($sm);
+			});
+		
+			if($name == "default"){
+				$default = $sm->get('default');
+			}
+			
+		}
+		return $default;
+	}
+			/*
+				foreach($containers as $name=>$navigation)
+				{
+			echo $name;
+			echo get_class($navigation);
+			//$sm->setService($name, $navigation);
+			}
+				
+			return $default;
+	}
+	
+	/*public function setNavigationEntries($containers)
+	{
+		$sm = $this->serviceLocator->get('service_manager');
+		//$sm = new ServiceManager();
+		$sm->setAllowOverride(true);
+		//$sm->setF
+		
+		$navigation = $this->serviceLocator->get('navigation'); 
+		
+		foreach($navigation as $name=>$pages)
+		{
+			if($name)
+		}
+		/*
+		foreach($containers as $name=>$navigation)
+		{	
+			echo $name;
+			echo get_class($navigation);
+			//$sm->setService($name, $navigation);
+		}
+			
+		return $default;
+	}
+	
+	protected function getNavs(ServiceLocatorInterface $serviceLocator)
+	{
+		$navContainers = array();
+		$config = $serviceLocator->get('Configuration');
+		$navs = $config['navigation'];
+		//exit();
+		foreach($navs as $name=>$pages)
+		{	
+			$p = $this->getPages($serviceLocator, $name);
+			
+			$navContainers[$name] = new Navigation($p); 
+		}
+		return $navContainers;
+	}
+	
+	protected function getPages(ServiceLocatorInterface $serviceLocator, $name=null)
+    {
+    	
+        if (null === $this->pages) {
+        	$name = ($name == null)? $this->getName(): $name;
+            $configuration = $serviceLocator->get('Configuration');
+
+            if (!isset($configuration['navigation'])) {
+            		
+                throw new \Zend\Navigation\Exception\InvalidArgumentException('Could not find navigation configuration key');
+            }
+            if (!isset($configuration['navigation'][$name])) {
+                throw new \Zend\Navigation\Exception\InvalidArgumentException(sprintf(
+                    'Failed to find a navigation container by the name "%s"',
+                    $name
+                ));
+            }
+
+            $application = $serviceLocator->get('Application');
+            $routeMatch  = $application->getMvcEvent()->getRouteMatch();
+            $router      = $application->getMvcEvent()->getRouter();
+            $pages       = $this->getPagesFromConfig($configuration['navigation'][$name]);
+
+            $this->pages = $this->injectComponents($pages, $routeMatch, $router);
+        }
+        return $this->pages;
+    }
+    	
+    	//return array of menus
+    	
+    	/*
+        if (null === $this->pages) {
+        	
+        	$container = new Navigation();
+            $application = $serviceLocator->get('Application');
+            $routeMatch  = $application->getMvcEvent()->getRouteMatch();
+            $router      = $application->getMvcEvent()->getRouter();
+            
+     		$pages = array(
+     			'home'=>array(
+     				'label'=>'Home',
+     				'route'=>'home',
+     				'pages'=>array(
+     					'menu-item1'=>array(
+     						'label'=>'SubP',
+     						'route'=>'menu-item',
+     						'params'=>array(
+     							'slug'=>'test',		
+     						),
+     					),
+     				),
+     			),
+     			'testPage'=>array(
+     				'label'=>'Test Page',
+     				'route'=>'page',
+				    'params'=>array('id'=>13)
+     			),
+     			'login'=>array(
+     				'label'=>'Login',
+     				'route'=>'zfcuser/login',
+     			),
+     			'logout'=>array(
+     				'label'=>'Logout',
+     				'route'=>'zfcuser/logout',
+     			),
+     			'admin'=>array(
+     				'label'=>'Admin',
+     				'route'=>'acl-admin',
+     				'pages'=>array(
+     					'Cat'=>array(
+     							'label'=>'CAT',
+     							'route'=>'acl-admin',
+     							'pages'=>array(
+     									'Acl'=>array(
+     											'label'=>'ACL',
+     											'route'=>'acl-admin',
+     											'params'=>array(
+     													'module'=>'acl',
+     													'controller'=>'admin'
+     											)
+     									),
+     									'pages'=>array(
+     											'label'=>'Pages',
+     											'route'=>'page-admin',
+     											'params'=>array(
+     													'module'=>'page'
+     											)
+     									),
+     									'Widgets'=>array(
+     											'label'=>'Widgets',
+     											'route'=>'widget-admin',
+     											'params'=>array(
+     													'module'=>'widget'
+     											)
+     									),
+     							)
+     					),
+     					
+     				),
+     			),
+     		);
+           */
+           
+        	
+       // }
+    
+  /*  protected function convertDataArrayToPagesArray($data)
+    {
+		$pages = array();
+		$menuService = $this->serviceLocator->get('MenuService');
+		if(count($data)>0)
+		{
+	    	foreach($data as $d)
+	    	{
+	    		$page = array(
+	    				'label'=>$d->label,
+	    				'controller'=> $d->namespace."\\".$d->controller,
+	    				'action'=>$d->action,
+	    				//'params'=>array('slug'=>$d->slug),
+	    				);
+	    		if($d->hasChildren())
+	    		{
+	    			$children = $d->getChildren($menuService);
+	    			print_r($children);
+	    			$converted = $this->convertDataArrayToPagesArray($children);
+	    			//print_r($converted);
+	    			//$page['pages'] = ;
+	    		}
+	    		$pages[$d->label] = $page;    		
+	    	}
+		}
+    	
+    	return $pages;
+    }*/
+}
